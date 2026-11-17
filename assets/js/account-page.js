@@ -206,6 +206,7 @@ function orderCard(o) {
       ${o.trackingNumber ? `<p class="tracking">Tracking number: <b>${esc(o.trackingNumber)}</b>${o.carrier ? ` · ${esc(o.carrier)}` : ""}${o.trackingUrl && /^https:\/\//.test(o.trackingUrl) ? ` · <a href="${esc(o.trackingUrl)}" target="_blank" rel="noopener">Track with carrier</a>` : ""}</p>` : ""}
       ${history.length ? `<ul class="history">${history.map((h) => `<li><b>${esc(STEPS.find(([k]) => k === h.status)?.[1] || h.status)}</b> <span class="muted">${fmtDate(h.at)}</span>${h.note ? ` — ${esc(h.note)}` : ""}</li>`).join("")}</ul>` : ""}
       <table class="items"><tbody>${items.map((it) => `<tr><td>${esc(it.name)}</td><td class="muted">× ${esc(it.qty ?? it.quantity ?? 1)}</td><td>${fmtMoney((it.price || 0) * (it.qty ?? it.quantity ?? 1), o.currency)}</td></tr>`).join("")}</tbody></table>
+      <p style="margin:14px 0 0"><a class="btn btn--sm btn--ghost" href="invoice.html?id=${encodeURIComponent(o.id)}">📄 Devis / bon de commande</a></p>
       ${o.shippingAddress ? `<p class="muted small">Ship to: ${esc([o.shippingAddress.fullName, o.shippingAddress.line1, o.shippingAddress.city, o.shippingAddress.country].filter(Boolean).join(", "))}</p>` : ""}
     </div>
   </details>`;

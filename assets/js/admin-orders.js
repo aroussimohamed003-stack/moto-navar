@@ -94,7 +94,7 @@ function open(o) {
   const a = o.shippingAddress || {};
   $("#order-detail").innerHTML = `
     <h2>Order #${esc(o.id.slice(0, 8).toUpperCase())}</h2>
-    <p class="muted small">${fmtDate(o.createdAt)} · ${pill(o.status)} · ${o.paymentMethod === "cash_on_delivery" ? "Cash on delivery" : esc(o.paymentMethod || "")}</p>
+    <p class="muted small">${fmtDate(o.createdAt)} · ${pill(o.status)} · <a href="invoice.html?id=${encodeURIComponent(o.id)}" target="_blank">📄 Devis</a> · ${o.paymentMethod === "cash_on_delivery" ? "Cash on delivery" : esc(o.paymentMethod || "")}</p>
     <div class="grid-2" style="margin:14px 0">
       <div class="card" style="margin:0;padding:16px">
         <b>${esc(a.fullName)}</b><br>

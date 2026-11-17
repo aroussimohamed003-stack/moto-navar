@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="assets/img/logo-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/auth.css">
+  <link rel="stylesheet" href="assets/css/shop.css">
+  <title>Devis – MOTO NAVAR</title>
+  <meta name="robots" content="noindex">
+</head>
+<body class="invoice-body">
+<header id="site-header" class="no-print"></header>
+<main class="invoice-page">
+  <div class="invoice-thanks no-print" id="thanks" hidden>
+    <div class="success-panel__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m5 12 5 5 9-10"/></svg></div>
+    <div><h1>Merci pour votre commande !</h1><p class="muted">Votre commande a été reçue. Nous vous appellerons pour confirmer la livraison. Téléchargez votre devis ci-dessous.</p></div>
+  </div>
+  <div class="invoice-actions no-print">
+    <button class="btn" id="dl-png" type="button" disabled><span>⬇ Télécharger l'image</span><span class="spinner" aria-hidden="true"></span></button>
+    <button class="btn btn--ghost" id="print" type="button">🖨 Imprimer / PDF</button>
+    <a class="btn btn--ghost" href="account.html#orders" id="back-link">Mes commandes</a>
+  </div>
+  <div class="invoice-wrap"><div id="invoice" class="invoice"><p class="muted">Chargement…</p></div></div>
+  <p class="muted small no-print" style="text-align:center;margin-top:14px">Aperçu de l'image :</p>
+  <img id="invoice-img" class="invoice-img no-print" alt="Devis MOTO NAVAR" hidden>
+</main>
+<footer id="site-footer" class="no-print"></footer>
+<script type="module" src="assets/js/site-header.js"></script>
+<script type="module" src="assets/js/invoice-page.js"></script>
+</body>
+</html>

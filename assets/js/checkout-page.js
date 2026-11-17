@@ -106,7 +106,7 @@ async function place() {
     });
     if (form.save.checked) await saveAddress({ ...address, label: "Home", isDefault: true }).catch(() => {});
     clearCart();
-    location.replace(`order-success.html?id=${encodeURIComponent(orderId)}`);
+    location.replace(`invoice.html?id=${encodeURIComponent(orderId)}&new=1`);
   } catch (err) {
     toast(authErrorMessage(err), "error", 7000);
     setLoading(btn, false);

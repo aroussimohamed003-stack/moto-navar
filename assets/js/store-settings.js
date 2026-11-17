@@ -16,6 +16,7 @@ export const DEFAULT_SETTINGS = {
   whatsapp: "",
   email: "",
   address: "Tunis, Tunisia",
+  taxId: "",
   facebook: "",
   instagram: "",
 };
