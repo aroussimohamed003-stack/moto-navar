@@ -94,7 +94,7 @@ export async function deleteProduct(id) {
 }
 
 /** Resize an image file in the browser to a JPEG data URL (no Storage needed). */
-export function resizeImage(file, max = 900, quality = 0.8) {
+export function resizeImage(file, max = 900, quality = 0.8, { png = false } = {}) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
@@ -104,11 +104,13 @@ export function resizeImage(file, max = 900, quality = 0.8) {
       c.width = Math.round(img.width * scale);
       c.height = Math.round(img.height * scale);
       const ctx = c.getContext("2d");
-      ctx.fillStyle = "#fff";
-      ctx.fillRect(0, 0, c.width, c.height);
+      if (!png) {
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, c.width, c.height);
+      }
       ctx.drawImage(img, 0, 0, c.width, c.height);
       URL.revokeObjectURL(url);
-      resolve(c.toDataURL("image/jpeg", quality));
+      resolve(png ? c.toDataURL("image/png") : c.toDataURL("image/jpeg", quality));
     };
     img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Could not read this image.")); };
     img.src = url;

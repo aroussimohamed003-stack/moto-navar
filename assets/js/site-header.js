@@ -7,7 +7,7 @@ import { auth, db, onAuthStateChanged, doc, getDoc } from "./firebase.js";
 import { logout } from "./auth-service.js";
 import { CATEGORIES } from "./products.js";
 import { cartCount } from "./cart.js";
-import { getSettings, isCurrentUserAdmin } from "./store-settings.js";
+import { getSettings, isCurrentUserAdmin, applyBrandLogo } from "./store-settings.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const page = location.pathname.split("/").pop() || "index.html";
@@ -136,3 +136,5 @@ if (footer) {
     </div>
     <div class="site-footer__bottom">© ${new Date().getFullYear()} MOTO NAVAR · Prices in Tunisian dinar (DT)</div>`;
 }
+
+applyBrandLogo();

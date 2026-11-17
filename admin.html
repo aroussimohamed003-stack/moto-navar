@@ -112,6 +112,22 @@
     <div class="panel__head"><div><h1 class="admin__title">Banner &amp; settings</h1><p class="muted" style="margin:6px 0 0">What customers see on the home page, delivery fees and contact details.</p></div></div>
     <form id="settings-form" novalidate>
       <div class="card">
+        <h3>Logo</h3>
+        <p class="muted small" style="margin:0 0 14px">Shown in the navigation bar, footer, sign-in pages and browser tab. PNG with a transparent background looks best.</p>
+        <div class="logo-preview">
+          <div class="logo-preview__bar">
+            <span class="brand"><img class="brand__mark" id="logo-preview-img" src="assets/img/logo-mark.svg" alt=""><span class="brand__word" id="logo-preview-word">Moto <b>Navar</b></span></span>
+            <span class="muted small">Home · Motorcycles · Shop</span>
+          </div>
+        </div>
+        <div class="photo-actions">
+          <label class="btn btn--sm" for="logo-file">Upload logo</label>
+          <input type="file" id="logo-file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+          <button class="btn btn--sm btn--ghost" type="button" id="logo-remove">Use default logo</button>
+          <label class="check" style="margin-left:8px"><input type="checkbox" name="logoShowName" id="logo-show-name" checked> Show "MOTO NAVAR" next to the logo</label>
+        </div>
+      </div>
+      <div class="card">
         <h3>Home page banner</h3>
         <div class="banner-preview" id="banner-preview"><div class="banner-preview__text"><small id="bp-kicker"></small><b id="bp-title"></b><span id="bp-sub"></span></div></div>
         <div class="grid-2">
@@ -269,5 +285,6 @@
 </dialog>
 
 <script type="module" src="assets/js/admin-page.js"></script>
+<script type="module" src="assets/js/brand-logo.js"></script>
 </body>
 </html>

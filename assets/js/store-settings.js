@@ -8,6 +8,8 @@ export const DEFAULT_SETTINGS = {
   bannerCta: "Browse motorcycles",
   bannerLink: "shop.html?category=Motorcycles",
   bannerImage: "",
+  logoImage: "",
+  logoShowName: true,
   deliveryFee: 8,
   freeDeliveryFrom: 500,
   phone: "",
@@ -37,7 +39,7 @@ export async function getSettings() {
 }
 
 export async function saveSettings(data) {
-  const clean = { ...data, deliveryFee: Number(data.deliveryFee) || 0, freeDeliveryFrom: Number(data.freeDeliveryFrom) || 0, updatedAt: serverTimestamp() };
+  const clean = { ...data, logoShowName: data.logoShowName !== false && data.logoShowName !== "false", deliveryFee: Number(data.deliveryFee) || 0, freeDeliveryFrom: Number(data.freeDeliveryFrom) || 0, updatedAt: serverTimestamp() };
   await setDoc(doc(db, "settings", "store"), clean, { merge: true });
   cache = { ...DEFAULT_SETTINGS, ...clean };
 }
@@ -63,4 +65,26 @@ export async function isCurrentUserAdmin(user = auth.currentUser) {
   } catch {
     return false;
   }
+}
+
+/**
+ * Replace every MOTO NAVAR logo on the page (a.brand) with the logo uploaded
+ * in Admin → Banner & settings. Also updates the browser tab icon.
+ */
+export async function applyBrandLogo(root = document) {
+  const s = await getSettings();
+  if (!s.logoImage) return;
+  root.querySelectorAll("a.brand").forEach((a) => {
+    const mark = a.querySelector(".brand__mark");
+    if (mark) {
+      mark.src = s.logoImage;
+      mark.classList.add("brand__mark--custom");
+    }
+    const word = a.querySelector(".brand__word");
+    if (word) word.hidden = !s.logoShowName;
+  });
+  let icon = document.querySelector('link[rel="icon"]');
+  if (!icon) { icon = document.createElement("link"); icon.rel = "icon"; document.head.appendChild(icon); }
+  icon.type = "image/png";
+  icon.href = s.logoImage;
 }
