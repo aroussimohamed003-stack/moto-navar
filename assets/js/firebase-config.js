@@ -10,12 +10,12 @@
  * Secrets belong only in the Firebase Console (see AUTH-SETUP-GUIDE.md).
  */
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyCTjd75Q0kIeYXlFw8D790Oqs2DC4vRh7A",
+  authDomain: "moto-navar.firebaseapp.com",
+  projectId: "moto-navar",
+  storageBucket: "moto-navar.firebasestorage.app",
+  messagingSenderId: "861282986950",
+  appId: "1:861282986950:web:a30410821d6b7bb9b1e0c7",
 };
 
 /** Site navigation settings used by the auth pages. */
