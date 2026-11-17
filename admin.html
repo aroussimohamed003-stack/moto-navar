@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin · Accounts – MOTO NAVAR</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <script>document.documentElement.classList.add("auth-pending");</script>
+  <link rel="icon" href="assets/img/logo-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/auth.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="MOTO NAVAR home">
+    <img class="brand__mark" src="assets/img/logo-mark.svg" alt="">
+    <span class="brand__word">Moto <b>Navar</b></span>
+    <span class="pill pill--danger" style="margin-left:6px">Admin</span>
+  </a>
+  <div class="topbar__right">
+    <span class="muted small" id="me-email"></span>
+    <a class="btn btn--sm btn--ghost" href="account.html">My account</a>
+    <button class="btn btn--sm btn--ghost" id="logout-btn" type="button">Log out</button>
+  </div>
+</header>
+
+<!-- Not an admin -->
+<section id="denied" class="denied" hidden>
+  <div class="empty">
+    <div class="empty__mark"></div>
+    <h3>Access denied</h3>
+    <p>This area is for MOTO NAVAR administrators only.</p>
+    <a class="btn btn--ghost" href="account.html">Go to my account</a>
+  </div>
+</section>
+
+<!-- Admin app -->
+<main id="admin-app" class="admin" hidden>
+  <div class="panel__head">
+    <div>
+      <h1 class="admin__title">Registered accounts</h1>
+      <p class="muted" style="margin:6px 0 0">Every customer who created a MOTO NAVAR account, with their email and sign-in method.</p>
+    </div>
+    <div class="toolbar-actions">
+      <button class="btn btn--sm btn--ghost" id="refresh" type="button">↻ Refresh</button>
+      <button class="btn btn--sm btn--ghost" id="copy-emails" type="button">Copy emails</button>
+      <button class="btn btn--sm" id="export-csv" type="button">Export CSV</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div><span>Total accounts</span><b id="stat-total">–</b></div>
+    <div><span>New this week</span><b id="stat-new">–</b></div>
+    <div><span>Verified emails</span><b id="stat-verified">–</b></div>
+    <div><span>Social sign-in</span><b id="stat-social">–</b></div>
+  </div>
+
+  <div class="form-alert form-alert--info" id="source-note" hidden>
+    Showing customer profiles from the database. To see <b>every</b> sign-in account and to delete accounts,
+    deploy the Cloud Functions (AUTH-SETUP-GUIDE.md, section 10).
+  </div>
+
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div class="field" style="margin:0;flex:1;min-width:220px">
+        <div class="input-wrap has-icon">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="search" type="search" placeholder="Search by email, name, phone…" autocomplete="off">
+        </div>
+      </div>
+      <select id="filter-provider" class="select">
+        <option value="">All sign-in methods</option>
+        <option value="password">Email &amp; password</option>
+        <option value="google.com">Google</option>
+        <option value="facebook.com">Facebook</option>
+        <option value="microsoft.com">Microsoft</option>
+        <option value="apple.com">Apple</option>
+      </select>
+      <span class="muted small" id="result-count"></span>
+    </div>
+    <div class="table-scroll">
+      <table class="accounts">
+        <thead>
+          <tr><th>Customer</th><th>Sign-in</th><th>Role</th><th>Registered</th><th>Last login</th><th></th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<!-- Delete confirmation -->
+<dialog id="delete-dialog">
+  <div class="dialog__icon" style="color:var(--danger)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></div>
+  <h2>Delete account?</h2>
+  <p class="muted">This permanently deletes <b id="delete-who"></b>: their login, profile, saved addresses and wishlist. Their orders are kept for your records. <b>This cannot be undone.</b></p>
+  <div class="field" style="margin-top:16px">
+    <label for="delete-confirm-input">Type <b>DELETE</b> to confirm</label>
+    <input id="delete-confirm-input" autocomplete="off">
+  </div>
+  <div class="dialog__actions">
+    <button class="btn btn--ghost" id="delete-cancel" type="button">Cancel</button>
+    <button class="btn btn--danger" id="delete-confirm" type="button" disabled><span>Delete account</span><span class="spinner" aria-hidden="true"></span></button>
+  </div>
+</dialog>
+
+<script type="module" src="assets/js/admin-page.js"></script>
+</body>
+</html>

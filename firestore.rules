@@ -1,0 +1,114 @@
+rules_version = '2';
+
+// =====================================================================
+// MOTO NAVAR – Firestore Security Rules
+// Enforced by Google's servers on every read/write. The website cannot
+// bypass them, even if someone edits the JavaScript in their browser.
+//
+// Admin rights come ONLY from a Firebase Auth custom claim (admin: true)
+// that can be set exclusively with the Admin SDK by a trusted operator
+// (see admin-tools/set-admin.js). The "role" field stored on a user's
+// profile is informational and can never be changed by the customer.
+// =====================================================================
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() { return request.auth != null; }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    function isAdmin() { return signedIn() && request.auth.token.get('admin', false) == true; }
+    function tokenEmail() { return request.auth.token.get('email', ''); }
+    function str(v, max) { return v is string && v.size() <= max; }
+    function incoming() { return request.resource.data; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    function validProfile(d) {
+      return str(d.fullName, 100)
+        && str(d.phone, 30)
+        && str(d.photoURL, 200000)       // provider URL or 256px data-URL thumbnail
+        && str(d.email, 254)
+        && str(d.provider, 40)
+        && d.providers is list && d.providers.size() <= 10;
+    }
+
+    // ---------- customer profiles ----------
+    match /users/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+
+      // First sign-in: the profile must describe the signed-in user and
+      // can only ever be created with role "customer".
+      allow create: if isOwner(uid)
+        && incoming().keys().hasAll(['uid', 'fullName', 'email', 'phone', 'photoURL', 'provider', 'providers', 'role', 'createdAt', 'lastLogin'])
+        && incoming().keys().hasOnly(['uid', 'fullName', 'email', 'phone', 'photoURL', 'provider', 'providers', 'role', 'createdAt', 'lastLogin'])
+        && incoming().uid == uid
+        && incoming().role == 'customer'
+        && incoming().createdAt == request.time
+        && incoming().lastLogin == request.time
+        && (incoming().email == '' || incoming().email == tokenEmail())
+        && validProfile(incoming());
+
+      // Customer edits: only these fields. role/uid/createdAt/provider are locked.
+      allow update: if isOwner(uid)
+        && changed().hasOnly(['fullName', 'phone', 'photoURL', 'lastLogin', 'providers', 'email'])
+        && (!changed().hasAny(['lastLogin']) || incoming().lastLogin == request.time)
+        && (!changed().hasAny(['email']) || incoming().email == tokenEmail())
+        && validProfile(incoming());
+
+      // Trusted administrators (custom claim) may manage profiles.
+      allow update, delete: if isAdmin();
+
+      // ----- saved addresses -----
+      match /addresses/{addressId} {
+        allow read, delete: if isOwner(uid) || isAdmin();
+        allow create, update: if isOwner(uid)
+          && incoming().keys().hasOnly(['label', 'fullName', 'phone', 'line1', 'line2', 'city', 'region', 'postalCode', 'country', 'isDefault', 'updatedAt'])
+          && str(incoming().label, 40) && str(incoming().fullName, 100) && str(incoming().phone, 30)
+          && str(incoming().line1, 200) && str(incoming().line2, 200) && str(incoming().city, 80)
+          && str(incoming().region, 80) && str(incoming().postalCode, 20) && str(incoming().country, 60)
+          && incoming().isDefault is bool;
+      }
+
+      // ----- wishlist (document id = product id) -----
+      match /wishlist/{productId} {
+        allow read, delete: if isOwner(uid) || isAdmin();
+        allow create, update: if isOwner(uid)
+          && incoming().keys().hasOnly(['productId', 'name', 'price', 'image', 'url', 'addedAt'])
+          && incoming().productId == productId
+          && str(incoming().name, 200) && incoming().price is number
+          && str(incoming().image, 1000) && str(incoming().url, 1000);
+      }
+    }
+
+    // ---------- orders ----------
+    match /orders/{orderId} {
+      // Customers see only their own orders.
+      allow read: if signedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+
+      // Customers may place an order for themselves, always as "pending".
+      // Status, tracking and payment fields are admin/server only.
+      allow create: if signedIn()
+        && incoming().keys().hasOnly(['userId', 'items', 'total', 'currency', 'shippingAddress', 'paymentMethod', 'status', 'createdAt'])
+        && incoming().userId == request.auth.uid
+        && incoming().status == 'pending'
+        && incoming().createdAt == request.time
+        && incoming().items is list && incoming().items.size() > 0 && incoming().items.size() <= 100
+        && incoming().total is number && incoming().total >= 0;
+
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------- catalogue (public read, admin write) ----------
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------- admin audit log (written only by Cloud Functions) ----------
+    match /adminLogs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Everything else is closed by default.
+  }
+}
