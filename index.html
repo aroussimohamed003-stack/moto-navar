@@ -3,69 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MOTO NAVAR – Motorcycle gear, parts &amp; accessories</title>
-  <meta name="description" content="MOTO NAVAR – helmets, riding gear, parts and accessories for riders in Tunisia.">
   <link rel="icon" href="assets/img/logo-mark.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/auth.css">
-  <style>
-    .home-nav { display: flex; align-items: center; gap: 22px; }
-    .home-nav a.plain { color: #cfcdd5; font-weight: 500; }
-    #mn-account-nav { display: flex; align-items: center; }
-    .mn-nav-signin { display: inline-flex; align-items: center; height: 38px; padding: 0 16px; border-radius: 10px; background: linear-gradient(180deg, var(--accent-2), var(--accent)); color: #fff; font-weight: 600; font-size: 14px; text-decoration: none !important; }
-    .mn-nav-account { color: #fff; font-weight: 600; text-decoration: none !important; }
-    .hero { position: relative; overflow: hidden; min-height: calc(100vh - 67px); display: grid; align-items: center; padding: 60px 28px; background:
-      radial-gradient(1000px 600px at 90% 100%, rgba(255,77,28,.35), transparent 60%),
-      linear-gradient(160deg, #141217 0%, #0a0a0c 70%); }
-    .hero::before { content: ""; position: absolute; inset: -20%; background: repeating-linear-gradient(-28deg, transparent 0 46px, rgba(255,255,255,.025) 46px 48px); pointer-events: none; }
-    .hero::after { content: ""; position: absolute; right: -160px; bottom: -200px; width: 620px; height: 620px; border-radius: 50%; border: 42px solid rgba(255,77,28,.16); pointer-events: none; }
-    .hero__inner { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; width: 100%; }
-    .hero h1 { font-family: var(--display); font-weight: 800; font-size: clamp(56px, 9vw, 128px); line-height: .9; text-transform: uppercase; margin: 16px 0 22px; }
-    .hero h1 em { font-style: normal; color: transparent; -webkit-text-stroke: 2px var(--text); }
-    .hero p { color: #c9c7cf; font-size: 19px; max-width: 520px; margin: 0 0 30px; }
-    .hero .cta { display: flex; gap: 12px; flex-wrap: wrap; }
-    .cats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; max-width: 1180px; margin: -60px auto 80px; padding: 0 28px; position: relative; z-index: 2; }
-    .cat { background: var(--bg-2); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
-    .cat b { font-family: var(--display); font-size: 24px; text-transform: uppercase; display: block; }
-    .cat span { color: var(--muted); font-size: 14px; }
-    @media (max-width: 760px) { .cats { grid-template-columns: 1fr 1fr; margin-top: 20px; } .home-nav a.plain { display: none; } }
-  </style>
+  <link rel="stylesheet" href="assets/css/shop.css">
+  <title>MOTO NAVAR – Motorcycles, scooters &amp; gear in Tunisia</title>
+  <meta name="description" content="MOTO NAVAR – new and used motorcycles, scooters, helmets, riding gear and parts. Delivery across Tunisia, cash on delivery.">
 </head>
 <body>
-<header class="topbar">
-  <a class="brand" href="index.html" aria-label="MOTO NAVAR home">
-    <img class="brand__mark" src="assets/img/logo-mark.svg" alt="">
-    <span class="brand__word">Moto <b>Navar</b></span>
-  </a>
-  <nav class="home-nav">
-    <a class="plain" href="#shop">Shop</a>
-    <a class="plain" href="account.html#wishlist">Wishlist</a>
-    <a class="plain" href="account.html#orders">Track order</a>
-    <div id="mn-account-nav"></div>
-  </nav>
-</header>
+<header id="site-header"></header>
 
-<section class="hero">
-  <div class="hero__inner">
-    <div class="hero__kicker">Helmets · Gear · Parts</div>
-    <h1>Built for<br><em>the road</em><br>ahead.</h1>
-    <p>Premium motorcycle gear and parts, delivered across Tunisia. Create your account to track orders and save your favourites.</p>
+<section class="banner" id="banner">
+  <div class="banner__bg" id="banner-bg"></div>
+  <div class="banner__inner">
+    <div class="hero__kicker" id="banner-kicker">MOTO NAVAR · Tunisia</div>
+    <h1 class="banner__title" id="banner-title">Ride the road ahead</h1>
+    <p class="banner__text" id="banner-text">New and used motorcycles, scooters, helmets and gear — delivered across Tunisia.</p>
     <div class="cta">
-      <a class="btn btn--display" href="register.html">Create account</a>
-      <a class="btn btn--ghost btn--display" href="login.html">Sign in</a>
+      <a class="btn btn--display" id="banner-cta" href="shop.html?category=Motorcycles">Browse motorcycles</a>
+      <a class="btn btn--ghost btn--display" href="shop.html">Shop all</a>
     </div>
   </div>
 </section>
 
-<section class="cats" id="shop">
-  <div class="cat"><b>Helmets</b><span>Full-face, modular, adventure</span></div>
-  <div class="cat"><b>Riding gear</b><span>Jackets, gloves, boots</span></div>
-  <div class="cat"><b>Parts</b><span>Brakes, chains, filters</span></div>
-  <div class="cat"><b>Accessories</b><span>Luggage, lights, care</span></div>
+<section class="perks-strip">
+  <div><b>🚚 Delivery</b><span>All 24 governorates</span></div>
+  <div><b>💵 Cash on delivery</b><span>Pay when you receive</span></div>
+  <div><b>🛡️ Warranty</b><span>On new motorcycles</span></div>
+  <div><b>📞 Support</b><span>Advice before you buy</span></div>
 </section>
 
-<script type="module" src="assets/js/auth-nav.js"></script>
+<section class="section">
+  <div class="section__head"><h2 class="section__title">Categories</h2></div>
+  <div class="cat-grid" id="cat-grid"></div>
+</section>
+
+<section class="section">
+  <div class="section__head"><h2 class="section__title">Motorcycles</h2><a href="shop.html?category=Motorcycles">View all →</a></div>
+  <div class="product-grid" id="moto-grid"><p class="muted">Loading…</p></div>
+</section>
+
+<section class="section">
+  <div class="section__head"><h2 class="section__title">Latest products</h2><a href="shop.html">View all →</a></div>
+  <div class="product-grid" id="latest-grid"><p class="muted">Loading…</p></div>
+</section>
+
+<footer id="site-footer"></footer>
+<script type="module" src="assets/js/site-header.js"></script>
+<script type="module" src="assets/js/home.js"></script>
 </body>
 </html>

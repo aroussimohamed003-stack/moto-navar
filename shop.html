@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="assets/img/logo-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/auth.css">
+  <link rel="stylesheet" href="assets/css/shop.css">
+  <title>Shop – MOTO NAVAR</title>
+</head>
+<body>
+<header id="site-header"></header>
+
+<main class="shop-page">
+  <div class="shop-page__head">
+    <div>
+      <h1 class="shop__title" id="shop-title">All products</h1>
+      <p class="muted" id="shop-count"></p>
+    </div>
+    <div class="shop-page__tools">
+      <button class="btn btn--sm btn--ghost filters-toggle" id="filters-toggle" type="button">Filters</button>
+      <select id="sort" class="select">
+        <option value="featured">Featured</option>
+        <option value="newest">Newest</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="name">Name A–Z</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="shop-layout">
+    <aside class="filters" id="filters">
+      <div class="filters__group">
+        <label for="f-q">Search</label>
+        <input id="f-q" class="input" type="search" placeholder="Name, brand, model…">
+      </div>
+      <div class="filters__group">
+        <span class="filters__label">Category</span>
+        <div id="f-cats" class="filters__list"></div>
+      </div>
+      <div class="filters__group">
+        <span class="filters__label">Brand</span>
+        <div id="f-brands" class="filters__list"><span class="muted small">—</span></div>
+      </div>
+      <div class="filters__group">
+        <span class="filters__label">Price (DT)</span>
+        <div class="filters__range"><input id="f-pmin" class="input" type="number" min="0" placeholder="Min"><span>–</span><input id="f-pmax" class="input" type="number" min="0" placeholder="Max"></div>
+      </div>
+      <div class="filters__group" id="f-cc-group">
+        <span class="filters__label">Engine (cc)</span>
+        <div class="filters__range"><input id="f-ccmin" class="input" type="number" min="0" placeholder="Min"><span>–</span><input id="f-ccmax" class="input" type="number" min="0" placeholder="Max"></div>
+      </div>
+      <div class="filters__group">
+        <span class="filters__label">Condition</span>
+        <div id="f-cond" class="filters__list"></div>
+      </div>
+      <div class="filters__group">
+        <label class="check"><input type="checkbox" id="f-stock"> In stock only</label>
+        <label class="check" style="margin-top:10px"><input type="checkbox" id="f-sale"> On sale</label>
+      </div>
+      <button class="btn btn--sm btn--ghost" id="f-reset" type="button" style="width:100%">Reset filters</button>
+    </aside>
+
+    <section class="product-grid" id="grid"><p class="muted">Loading products…</p></section>
+  </div>
+</main>
+
+<footer id="site-footer"></footer>
+<script type="module" src="assets/js/site-header.js"></script>
+<script type="module" src="assets/js/shop-page.js"></script>
+</body>
+</html>

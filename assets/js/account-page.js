@@ -9,6 +9,8 @@ import {
   PROVIDERS, providerLabel, linkProvider, logout, upsertUserProfile,
   getPendingLink, EmailAuthProvider,
 } from "./auth-service.js";
+import { getProduct } from "./products.js";
+import { isCurrentUserAdmin } from "./store-settings.js";
 import {
   getProfile, updateProfileFields, listMyOrders, listWishlist, removeFromWishlist,
   listAddresses, saveAddress, deleteAddress, setDefaultAddress,
@@ -221,6 +223,10 @@ async function loadWishlist() {
   const box = $("#wishlist-grid");
   try {
     const items = await listWishlist();
+    await Promise.all(items.map(async (it) => {
+      if (it.image) return;
+      try { it.image = (await getProduct(it.productId))?.images?.[0] || ""; } catch { /* product removed */ }
+    }));
     $("#count-wishlist").textContent = items.length;
     if (!items.length) {
       box.innerHTML = emptyState("Your wishlist is empty", "Tap the heart on any helmet, jacket or part to save it here.", "Browse products");
@@ -450,7 +456,7 @@ $("#reset-instead").addEventListener("click", (e) => {
 
 user = await requireAuth();
 watchSignOut();
-user.getIdTokenResult().then((t) => { if (t.claims.admin === true) $("#admin-link").hidden = false; }).catch(() => {});
+isCurrentUserAdmin(user).then((ok) => { if (ok) $("#admin-link").hidden = false; });
 initPasswordToggles();
 initTabs();
 

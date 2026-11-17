@@ -5,10 +5,11 @@ rules_version = '2';
 // Enforced by Google's servers on every read/write. The website cannot
 // bypass them, even if someone edits the JavaScript in their browser.
 //
-// Admin rights come ONLY from a Firebase Auth custom claim (admin: true)
-// that can be set exclusively with the Admin SDK by a trusted operator
-// (see admin-tools/set-admin.js). The "role" field stored on a user's
-// profile is informational and can never be changed by the customer.
+// Admin rights come ONLY from (a) a document admins/{uid} that the owner
+// creates in the Firebase console (nobody can write it from the website), or
+// (b) a Firebase Auth custom claim admin:true set with the Admin SDK.
+// The "role" field stored on a user's profile is informational and can never
+// be changed by the customer.
 // =====================================================================
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -16,7 +17,10 @@ service cloud.firestore {
     // ---------- helpers ----------
     function signedIn() { return request.auth != null; }
     function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
-    function isAdmin() { return signedIn() && request.auth.token.get('admin', false) == true; }
+    function isAdmin() {
+      return signedIn() && (request.auth.token.get('admin', false) == true
+        || exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
     function tokenEmail() { return request.auth.token.get('email', ''); }
     function str(v, max) { return v is string && v.size() <= max; }
     function incoming() { return request.resource.data; }
@@ -87,8 +91,10 @@ service cloud.firestore {
       // Customers may place an order for themselves, always as "pending".
       // Status, tracking and payment fields are admin/server only.
       allow create: if signedIn()
-        && incoming().keys().hasOnly(['userId', 'items', 'total', 'currency', 'shippingAddress', 'paymentMethod', 'status', 'createdAt'])
+        && incoming().keys().hasOnly(['userId', 'customerEmail', 'items', 'subtotal', 'deliveryFee', 'total', 'currency', 'shippingAddress', 'note', 'paymentMethod', 'status', 'createdAt'])
         && incoming().userId == request.auth.uid
+        && (!('customerEmail' in incoming()) || incoming().customerEmail == '' || incoming().customerEmail == tokenEmail())
+        && (!('note' in incoming()) || str(incoming().note, 500))
         && incoming().status == 'pending'
         && incoming().createdAt == request.time
         && incoming().items is list && incoming().items.size() > 0 && incoming().items.size() <= 100
@@ -101,6 +107,18 @@ service cloud.firestore {
     match /products/{productId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // ---------- store settings: banner, delivery fee, contact ----------
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ---------- administrators (managed in the Firebase console only) ----------
+    match /admins/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow write: if false;
     }
 
     // ---------- admin audit log (written only by Cloud Functions) ----------

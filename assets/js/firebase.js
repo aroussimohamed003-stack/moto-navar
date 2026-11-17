@@ -46,6 +46,8 @@ import {
   getDocs,
   writeBatch,
   serverTimestamp,
+  arrayUnion,
+  Timestamp,
 } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-functions.js";
 import { firebaseConfig, siteSettings } from "./firebase-config.js";
@@ -100,5 +102,7 @@ export {
   getDocs,
   writeBatch,
   serverTimestamp,
+  arrayUnion,
+  Timestamp,
   httpsCallable,
 };

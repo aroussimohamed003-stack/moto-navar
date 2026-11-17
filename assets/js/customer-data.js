@@ -55,13 +55,17 @@ export async function listMyOrders() {
  * IMPORTANT: verify prices & totals on the server (Cloud Function or your
  * back office) before fulfilling – never trust client-side totals.
  */
-export async function createOrder({ items, total, currency = "TND", shippingAddress, paymentMethod = "cash_on_delivery" }) {
+export async function createOrder({ items, subtotal, deliveryFee = 0, total, currency = "TND", shippingAddress, note = "", paymentMethod = "cash_on_delivery" }) {
   const ref = await addDoc(collection(db, "orders"), {
     userId: uid(),
+    customerEmail: auth.currentUser.email || "",
     items,
+    subtotal: subtotal ?? total,
+    deliveryFee,
     total,
     currency,
     shippingAddress,
+    note,
     paymentMethod,
     status: "pending",
     createdAt: serverTimestamp(),

@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin · Accounts – MOTO NAVAR</title>
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
-  <script>document.documentElement.classList.add("auth-pending");</script>
   <link rel="icon" href="assets/img/logo-mark.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/auth.css">
+  <link rel="stylesheet" href="assets/css/shop.css">
+  <title>Admin – MOTO NAVAR</title>
+  <meta name="robots" content="noindex, nofollow">
+  <script>document.documentElement.classList.add("auth-pending");</script>
 </head>
 <body>
 <header class="topbar">
@@ -22,12 +22,11 @@
   </a>
   <div class="topbar__right">
     <span class="muted small" id="me-email"></span>
-    <a class="btn btn--sm btn--ghost" href="account.html">My account</a>
+    <a class="btn btn--sm btn--ghost" href="index.html" target="_blank">View shop</a>
     <button class="btn btn--sm btn--ghost" id="logout-btn" type="button">Log out</button>
   </div>
 </header>
 
-<!-- Not an admin -->
 <section id="denied" class="denied" hidden>
   <div class="empty">
     <div class="empty__mark"></div>
@@ -37,70 +36,232 @@
   </div>
 </section>
 
-<!-- Admin app -->
 <main id="admin-app" class="admin" hidden>
-  <div class="panel__head">
-    <div>
-      <h1 class="admin__title">Registered accounts</h1>
-      <p class="muted" style="margin:6px 0 0">Every customer who created a MOTO NAVAR account, with their email and sign-in method.</p>
+  <nav class="admin-tabs" aria-label="Admin sections">
+    <a href="#orders" data-admin-tab="orders">Orders <span class="count" id="badge-pending"></span></a>
+    <a href="#products" data-admin-tab="products">Products</a>
+    <a href="#settings" data-admin-tab="settings">Banner &amp; settings</a>
+    <a href="#accounts" data-admin-tab="accounts">Accounts</a>
+  </nav>
+
+  <!-- ORDERS -->
+  <section id="tab-orders" hidden>
+    <div class="panel__head">
+      <div><h1 class="admin__title">Orders</h1><p class="muted" style="margin:6px 0 0">Confirm orders, update their status and add tracking numbers.</p></div>
+      <button class="btn btn--sm btn--ghost" id="o-refresh" type="button">↻ Refresh</button>
     </div>
-    <div class="toolbar-actions">
-      <button class="btn btn--sm btn--ghost" id="refresh" type="button">↻ Refresh</button>
-      <button class="btn btn--sm btn--ghost" id="copy-emails" type="button">Copy emails</button>
-      <button class="btn btn--sm" id="export-csv" type="button">Export CSV</button>
+    <div class="stats">
+      <div><span>Orders</span><b id="os-total">–</b></div>
+      <div><span>Pending</span><b id="os-pending">–</b></div>
+      <div><span>In delivery</span><b id="os-shipping">–</b></div>
+      <div><span>Revenue (delivered)</span><b id="os-revenue">–</b></div>
     </div>
-  </div>
-
-  <div class="stats">
-    <div><span>Total accounts</span><b id="stat-total">–</b></div>
-    <div><span>New this week</span><b id="stat-new">–</b></div>
-    <div><span>Verified emails</span><b id="stat-verified">–</b></div>
-    <div><span>Social sign-in</span><b id="stat-social">–</b></div>
-  </div>
-
-  <div class="form-alert form-alert--info" id="source-note" hidden>
-    Showing customer profiles from the database. To see <b>every</b> sign-in account and to delete accounts,
-    deploy the Cloud Functions (AUTH-SETUP-GUIDE.md, section 10).
-  </div>
-
-  <div class="table-card">
-    <div class="table-toolbar">
-      <div class="field" style="margin:0;flex:1;min-width:220px">
-        <div class="input-wrap has-icon">
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div class="field" style="margin:0;flex:1;min-width:220px"><div class="input-wrap has-icon">
           <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input id="search" type="search" placeholder="Search by email, name, phone…" autocomplete="off">
+          <input id="o-search" type="search" placeholder="Search by order, name, phone, email…" autocomplete="off">
+        </div></div>
+        <select id="o-status" class="select"><option value="">All statuses</option></select>
+        <span class="muted small" id="o-count"></span>
+      </div>
+      <div class="table-scroll">
+        <table class="accounts">
+          <thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <tbody id="o-tbody"><tr><td colspan="7" class="muted center">Loading orders…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="tab-products" hidden>
+    <div class="panel__head">
+      <div><h1 class="admin__title">Products</h1><p class="muted" style="margin:6px 0 0">Motorcycles, scooters, gear and parts shown in the shop. Prices in Tunisian dinar (DT).</p></div>
+      <button class="btn" id="product-add" type="button">+ Add product</button>
+    </div>
+    <div class="stats">
+      <div><span>Products</span><b id="ps-total">–</b></div>
+      <div><span>Visible</span><b id="ps-visible">–</b></div>
+      <div><span>Low stock (≤2)</span><b id="ps-low">–</b></div>
+      <div><span>Out of stock</span><b id="ps-out">–</b></div>
+    </div>
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div class="field" style="margin:0;flex:1;min-width:220px"><div class="input-wrap has-icon">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="p-search" type="search" placeholder="Search name, brand, model, reference…" autocomplete="off">
+        </div></div>
+        <select id="p-filter-cat" class="select"><option value="">All categories</option></select>
+        <select id="p-filter-status" class="select"><option value="">Any status</option><option value="visible">Visible</option><option value="hidden">Hidden</option><option value="featured">Featured</option></select>
+        <select id="p-filter-stock" class="select"><option value="">Any stock</option><option value="in">In stock</option><option value="low">Low (≤2)</option><option value="out">Out of stock</option></select>
+        <select id="p-sort" class="select"><option value="newest">Newest</option><option value="name">Name</option><option value="price-asc">Price ↑</option><option value="price-desc">Price ↓</option><option value="stock">Stock ↑</option></select>
+        <span class="muted small" id="p-count"></span>
+      </div>
+      <div class="table-scroll">
+        <table class="accounts">
+          <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+          <tbody id="p-tbody"><tr><td colspan="6" class="muted center">Loading products…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="tab-settings" hidden>
+    <div class="panel__head"><div><h1 class="admin__title">Banner &amp; settings</h1><p class="muted" style="margin:6px 0 0">What customers see on the home page, delivery fees and contact details.</p></div></div>
+    <form id="settings-form" novalidate>
+      <div class="card">
+        <h3>Home page banner</h3>
+        <div class="banner-preview" id="banner-preview"><div class="banner-preview__text"><small id="bp-kicker"></small><b id="bp-title"></b><span id="bp-sub"></span></div></div>
+        <div class="grid-2">
+          <div class="field"><label>Small title</label><input name="bannerKicker"></div>
+          <div class="field"><label>Main title</label><input name="bannerTitle"></div>
+        </div>
+        <div class="field"><label>Text</label><textarea name="bannerSubtitle" rows="2" class="textarea"></textarea></div>
+        <div class="grid-2">
+          <div class="field"><label>Button text</label><input name="bannerCta"></div>
+          <div class="field"><label>Button link</label><input name="bannerLink" placeholder="shop.html?category=Motorcycles"></div>
+        </div>
+        <div class="photo-actions">
+          <label class="btn btn--sm" for="banner-file">Upload banner image</label>
+          <input type="file" id="banner-file" accept="image/jpeg,image/png,image/webp" hidden>
+          <button class="btn btn--sm btn--ghost" type="button" id="banner-remove">Remove image</button>
+          <span class="muted small">Wide photo recommended (e.g. 1600×700).</span>
         </div>
       </div>
-      <select id="filter-provider" class="select">
-        <option value="">All sign-in methods</option>
-        <option value="password">Email &amp; password</option>
-        <option value="google.com">Google</option>
-        <option value="facebook.com">Facebook</option>
-        <option value="microsoft.com">Microsoft</option>
-        <option value="apple.com">Apple</option>
-      </select>
-      <span class="muted small" id="result-count"></span>
+      <div class="card">
+        <h3>Delivery</h3>
+        <div class="grid-2">
+          <div class="field"><label>Delivery fee (DT)</label><input name="deliveryFee" type="number" min="0" step="0.5"></div>
+          <div class="field"><label>Free delivery from (DT) <span class="opt">0 = never</span></label><input name="freeDeliveryFrom" type="number" min="0" step="1"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Contact (shown in the footer and product pages)</h3>
+        <div class="grid-2">
+          <div class="field"><label>Phone</label><input name="phone" placeholder="+216 …"></div>
+          <div class="field"><label>WhatsApp number</label><input name="whatsapp" placeholder="+216 …"></div>
+          <div class="field"><label>Email</label><input name="email" type="email"></div>
+          <div class="field"><label>Address</label><input name="address"></div>
+          <div class="field"><label>Facebook page link</label><input name="facebook" placeholder="https://facebook.com/…"></div>
+          <div class="field"><label>Instagram link</label><input name="instagram" placeholder="https://instagram.com/…"></div>
+        </div>
+      </div>
+      <button class="btn btn--display" type="submit"><span>Save settings</span><span class="spinner" aria-hidden="true"></span></button>
+    </form>
+  </section>
+
+  <!-- ACCOUNTS -->
+  <section id="tab-accounts" hidden>
+    <div class="panel__head">
+      <div><h1 class="admin__title">Registered accounts</h1><p class="muted" style="margin:6px 0 0">Every customer who created a MOTO NAVAR account.</p></div>
+      <div class="toolbar-actions">
+        <button class="btn btn--sm btn--ghost" id="refresh" type="button">↻ Refresh</button>
+        <button class="btn btn--sm btn--ghost" id="copy-emails" type="button">Copy emails</button>
+        <button class="btn btn--sm" id="export-csv" type="button">Export CSV</button>
+      </div>
     </div>
-    <div class="table-scroll">
-      <table class="accounts">
-        <thead>
-          <tr><th>Customer</th><th>Sign-in</th><th>Role</th><th>Registered</th><th>Last login</th><th></th></tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
+    <div class="stats">
+      <div><span>Total accounts</span><b id="stat-total">–</b></div>
+      <div><span>New this week</span><b id="stat-new">–</b></div>
+      <div><span>Verified emails</span><b id="stat-verified">–</b></div>
+      <div><span>Social sign-in</span><b id="stat-social">–</b></div>
     </div>
-  </div>
+    <div class="form-alert form-alert--info" id="source-note" hidden>Showing customer profiles from the database. Deleting accounts needs the Cloud Functions (Blaze plan) — see AUTH-SETUP-GUIDE.md section 10.</div>
+    <div class="table-card">
+      <div class="table-toolbar">
+        <div class="field" style="margin:0;flex:1;min-width:220px"><div class="input-wrap has-icon">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="search" type="search" placeholder="Search by email, name, phone…" autocomplete="off">
+        </div></div>
+        <select id="filter-provider" class="select">
+          <option value="">All sign-in methods</option><option value="password">Email &amp; password</option><option value="google.com">Google</option><option value="facebook.com">Facebook</option><option value="microsoft.com">Microsoft</option><option value="apple.com">Apple</option>
+        </select>
+        <span class="muted small" id="result-count"></span>
+      </div>
+      <div class="table-scroll">
+        <table class="accounts">
+          <thead><tr><th>Customer</th><th>Sign-in</th><th>Role</th><th>Registered</th><th>Last login</th><th></th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 </main>
 
-<!-- Delete confirmation -->
-<dialog id="delete-dialog">
-  <div class="dialog__icon" style="color:var(--danger)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg></div>
-  <h2>Delete account?</h2>
-  <p class="muted">This permanently deletes <b id="delete-who"></b>: their login, profile, saved addresses and wishlist. Their orders are kept for your records. <b>This cannot be undone.</b></p>
-  <div class="field" style="margin-top:16px">
-    <label for="delete-confirm-input">Type <b>DELETE</b> to confirm</label>
-    <input id="delete-confirm-input" autocomplete="off">
+<!-- Product editor -->
+<dialog id="product-dialog" class="dialog--wide">
+  <h2 id="product-dialog-title">Add product</h2>
+  <form id="product-form" novalidate>
+    <div class="field"><label for="pf-name">Product name</label><input id="pf-name" name="name" placeholder="e.g. Yamaha MT-07 2023"><span class="field__error"></span></div>
+    <div class="grid-3">
+      <div class="field"><label for="pf-category">Category</label><select id="pf-category" name="category" class="select" style="width:100%"></select></div>
+      <div class="field"><label for="pf-brand">Brand</label><input id="pf-brand" name="brand" list="brand-list" placeholder="Yamaha, Honda, SYM…"><datalist id="brand-list"></datalist></div>
+      <div class="field"><label for="pf-model">Model</label><input id="pf-model" name="model"></div>
+    </div>
+    <div class="grid-3">
+      <div class="field"><label for="pf-price">Price (DT)</label><input id="pf-price" name="price" type="number" min="0" step="0.001"><span class="field__error"></span></div>
+      <div class="field"><label for="pf-old">Old price (DT) <span class="opt">for a discount</span></label><input id="pf-old" name="oldPrice" type="number" min="0" step="0.001"></div>
+      <div class="field"><label for="pf-stock">Stock</label><input id="pf-stock" name="stock" type="number" min="0" step="1" value="1"><span class="field__error"></span></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label for="pf-condition">Condition</label><select id="pf-condition" name="condition" class="select" style="width:100%"></select></div>
+      <div class="field"><label for="pf-sku">Reference / SKU <span class="opt">(optional)</span></label><input id="pf-sku" name="sku"></div>
+    </div>
+    <fieldset class="specs-box" id="specs-box">
+      <legend>Motorcycle specifications <span class="opt">(fill what you know)</span></legend>
+      <div class="grid-3" id="specs-fields"></div>
+    </fieldset>
+    <div class="field"><label for="pf-desc">Description</label><textarea id="pf-desc" name="description" rows="4" class="textarea" placeholder="Condition details, papers (carte grise), options, sizes…"></textarea></div>
+    <div class="field">
+      <label>Photos <span class="opt">(up to 4 – the first one is the main photo)</span></label>
+      <div class="img-grid" id="pf-images"></div>
+      <span class="field__error" id="pf-images-error"></span>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-top:6px">
+      <label class="check"><input type="checkbox" name="active" checked> Visible in shop</label>
+      <label class="check"><input type="checkbox" name="featured"> Featured on home page</label>
+    </div>
+    <div class="dialog__actions">
+      <button class="btn btn--ghost" type="button" id="product-cancel">Cancel</button>
+      <button class="btn" type="submit"><span>Save product</span><span class="spinner" aria-hidden="true"></span></button>
+    </div>
+  </form>
+  <input type="file" id="pf-file" accept="image/jpeg,image/png,image/webp" multiple hidden>
+</dialog>
+
+<dialog id="product-delete-dialog">
+  <h2>Delete product?</h2>
+  <p class="muted"><b id="pdel-name"></b> will be removed from the shop. This cannot be undone.</p>
+  <div class="dialog__actions">
+    <button class="btn btn--ghost" type="button" id="pdel-cancel">Cancel</button>
+    <button class="btn btn--danger" type="button" id="pdel-confirm"><span>Delete</span><span class="spinner" aria-hidden="true"></span></button>
   </div>
+</dialog>
+
+<!-- Order detail -->
+<dialog id="order-dialog" class="dialog--wide">
+  <div id="order-detail"></div>
+  <form id="order-form" novalidate>
+    <div class="grid-3">
+      <div class="field"><label>Status</label><select name="status" class="select" style="width:100%"></select></div>
+      <div class="field"><label>Carrier</label><input name="carrier" placeholder="Aramex, Rapid Poste…"></div>
+      <div class="field"><label>Tracking number</label><input name="trackingNumber"></div>
+    </div>
+    <div class="field"><label>Note to customer <span class="opt">(shown in order history)</span></label><input name="note" maxlength="200"></div>
+    <p class="muted small">Stock is deducted automatically when an order is confirmed, and restored if it is cancelled.</p>
+    <div class="dialog__actions">
+      <button class="btn btn--ghost" type="button" id="order-close">Close</button>
+      <button class="btn" type="submit"><span>Update order</span><span class="spinner" aria-hidden="true"></span></button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="delete-dialog">
+  <h2>Delete account?</h2>
+  <p class="muted">This permanently deletes <b id="delete-who"></b>. <b>This cannot be undone.</b></p>
+  <div class="field" style="margin-top:16px"><label for="delete-confirm-input">Type <b>DELETE</b> to confirm</label><input id="delete-confirm-input" autocomplete="off"></div>
   <div class="dialog__actions">
     <button class="btn btn--ghost" id="delete-cancel" type="button">Cancel</button>
     <button class="btn btn--danger" id="delete-confirm" type="button" disabled><span>Delete account</span><span class="spinner" aria-hidden="true"></span></button>

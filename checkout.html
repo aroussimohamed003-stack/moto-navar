@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="assets/img/logo-mark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/auth.css">
+  <link rel="stylesheet" href="assets/css/shop.css">
+  <title>Checkout – MOTO NAVAR</title>
+  <meta name="robots" content="noindex">
+</head>
+<body>
+<header id="site-header"></header>
+<main class="checkout-page">
+  <h1 class="shop__title">Checkout</h1>
+  <div class="checkout-layout">
+    <form id="checkout-form" class="card" novalidate>
+      <h3>1. Delivery details</h3>
+      <div class="field" id="saved-wrap" hidden>
+        <label for="saved">Use a saved address</label>
+        <select id="saved" class="select" style="width:100%"></select>
+      </div>
+      <div class="grid-2">
+        <div class="field"><label for="c-name">Full name</label><input id="c-name" name="fullName" autocomplete="name"><span class="field__error"></span></div>
+        <div class="field"><label for="c-phone">Phone</label><input id="c-phone" name="phone" type="tel" autocomplete="tel" placeholder="+216 XX XXX XXX"><span class="field__error"></span></div>
+      </div>
+      <div class="field"><label for="c-line1">Address</label><input id="c-line1" name="line1" autocomplete="address-line1" placeholder="Street, number, building"><span class="field__error"></span></div>
+      <div class="grid-3">
+        <div class="field"><label for="c-gov">Governorate</label><select id="c-gov" name="region" class="select" style="width:100%"></select><span class="field__error"></span></div>
+        <div class="field"><label for="c-city">City</label><input id="c-city" name="city" autocomplete="address-level2"><span class="field__error"></span></div>
+        <div class="field"><label for="c-zip">Postal code</label><input id="c-zip" name="postalCode" autocomplete="postal-code" inputmode="numeric"><span class="field__error"></span></div>
+      </div>
+      <div class="field"><label for="c-note">Note for delivery <span class="opt">(optional)</span></label><textarea id="c-note" name="note" rows="2" class="textarea" placeholder="Landmark, best time to call…"></textarea></div>
+      <label class="check"><input type="checkbox" name="save" checked> Save this address to my account</label>
+
+      <h3 style="margin-top:26px">2. Payment</h3>
+      <label class="pay-option is-selected"><input type="radio" name="payment" value="cash_on_delivery" checked> <span><b>Cash on delivery</b><span class="muted small">Pay in cash when you receive your order.</span></span></label>
+    </form>
+
+    <aside class="card summary" id="summary"><p class="muted">Loading…</p></aside>
+  </div>
+</main>
+<footer id="site-footer"></footer>
+<script type="module" src="assets/js/site-header.js"></script>
+<script type="module" src="assets/js/checkout-page.js"></script>
+</body>
+</html>

@@ -13,6 +13,10 @@ import {
 import { requireAuth } from "./auth-guard.js";
 import { providerLabel, logout } from "./auth-service.js";
 import { toast, setLoading, authErrorMessage, showConfigWarning, ICONS } from "./ui.js";
+import { initProducts } from "./admin-products.js";
+import { initOrders } from "./admin-orders.js";
+import { initSettings } from "./admin-settings.js";
+import { isCurrentUserAdmin } from "./store-settings.js";
 
 if (!isFirebaseConfigured) showConfigWarning();
 
@@ -207,18 +211,39 @@ confirmBtn.addEventListener("click", async () => {
   }
 });
 
+/* ---------------- Tabs ---------------- */
+
+const TABS = ["orders", "products", "settings", "accounts"];
+function initAdminTabs() {
+  const links = document.querySelectorAll("[data-admin-tab]");
+  const show = (name) => {
+    links.forEach((l) => l.classList.toggle("is-active", l.dataset.adminTab === name));
+    TABS.forEach((t) => ($(`#tab-${t}`).hidden = t !== name));
+  };
+  links.forEach((l) => l.addEventListener("click", (e) => {
+    e.preventDefault();
+    history.replaceState(null, "", `#${l.dataset.adminTab}`);
+    show(l.dataset.adminTab);
+  }));
+  const h = location.hash.slice(1);
+  show(TABS.includes(h) ? h : "orders");
+}
+
 /* ---------------- Boot ---------------- */
 
 me = await requireAuth();
 $("#me-email").textContent = me.email || "";
 $("#logout-btn").onclick = async () => { await logout(); location.replace(siteSettings.loginUrl); };
 
-const token = await me.getIdTokenResult(true);
-if (token.claims.admin !== true) {
+if (!(await isCurrentUserAdmin(me))) {
   $("#denied").hidden = false;
   $("#admin-app").hidden = true;
 } else {
   $("#admin-app").hidden = false;
+  initAdminTabs();
+  initOrders();
+  initProducts();
+  initSettings();
   loadAccounts().catch((err) => {
     $("#tbody").innerHTML = `<tr><td colspan="6" class="muted center">Could not load accounts: ${esc(authErrorMessage(err))}</td></tr>`;
   });
