@@ -2,7 +2,7 @@
 import {
   auth, isFirebaseConfigured, siteSettings, updateProfile, updatePassword,
   reauthenticateWithCredential, reauthenticateWithPopup, linkWithCredential,
-  unlink, sendEmailVerification,
+  unlink,
 } from "./firebase.js";
 import { requireAuth, watchSignOut } from "./auth-guard.js";
 import {
@@ -82,9 +82,6 @@ function renderProfile() {
   $("#meta-provider").innerHTML = `${ICONS[profile.provider] || ""} ${esc(providerLabel(profile.provider || "password"))}`;
   $("#meta-since").textContent = fmtDate(profile.createdAt);
   $("#meta-last").textContent = fmtDate(profile.lastLogin);
-  $("#meta-verified").innerHTML = user.emailVerified
-    ? `<span class="pill pill--ok">Verified</span>`
-    : `<span class="pill pill--warn">Not verified</span>`;
 }
 
 $("#profile-form").addEventListener("submit", async (e) => {
@@ -158,36 +155,6 @@ function resizeImage(file, size) {
     img.src = url;
   });
 }
-
-/* ---- Email verification ---- */
-
-function renderVerifyBanner() {
-  const hasPassword = user.providerData.some((p) => p.providerId === "password");
-  const banner = $("#verify-banner");
-  banner.hidden = user.emailVerified || !hasPassword;
-  $("#verify-email").textContent = user.email || "";
-}
-
-$("#verify-resend").addEventListener("click", async (e) => {
-  setLoading(e.currentTarget, true);
-  try {
-    await sendEmailVerification(user);
-    toast("Verification email sent. Check your inbox.", "success");
-  } catch (err) {
-    toast(authErrorMessage(err), "error");
-  } finally {
-    setLoading(e.currentTarget, false);
-  }
-});
-
-$("#verify-check").addEventListener("click", async () => {
-  await user.reload();
-  await user.getIdToken(true); // refresh token so Security Rules see email_verified
-  user = auth.currentUser;
-  renderVerifyBanner();
-  renderProfile();
-  toast(user.emailVerified ? "Email verified — thank you!" : "Not verified yet. Click the link in the email first.", user.emailVerified ? "success" : "info");
-});
 
 /* ================================================================== */
 /* Orders + tracking                                                  */
@@ -500,7 +467,6 @@ try {
 
 renderHeader();
 renderProfile();
-renderVerifyBanner();
 renderSecurity();
 loadOrders();
 loadWishlist();

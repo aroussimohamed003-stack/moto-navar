@@ -22,7 +22,6 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
-  sendEmailVerification,
   updateProfile,
   linkWithCredential,
   linkWithPopup,
@@ -286,12 +285,6 @@ export async function registerWithEmail({ fullName, email, phone, password }) {
   const result = await createUserWithEmailAndPassword(auth, email.trim(), password);
   const user = result.user;
   await updateProfile(user, { displayName: fullName.trim() });
-  try {
-    await sendEmailVerification(user, { url: new URL(siteSettings.accountUrl, location.href).href });
-  } catch {
-    // If the continue URL's domain is not authorized, send without it.
-    try { await sendEmailVerification(user); } catch { /* reported on account page */ }
-  }
   await upsertUserProfile(user, { fullName: fullName.trim(), phone: (phone || "").trim(), provider: "password" });
   return { user };
 }

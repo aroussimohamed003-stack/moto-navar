@@ -55,7 +55,7 @@ form.addEventListener("submit", async (e) => {
   setLoading(btn, true);
   try {
     await registerWithEmail(data);
-    toast("Account created! We sent you an email to verify your address.", "success", 6000);
+    toast("Account created! Welcome to MOTO NAVAR.", "success", 4000);
     setTimeout(() => location.replace(safeNextUrl(siteSettings.afterLoginUrl)), 900);
   } catch (err) {
     handleAuthError(err);
