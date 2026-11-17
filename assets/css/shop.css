@@ -177,3 +177,16 @@
   .cart-row .qty, .cart-row__total { grid-column: 2; justify-self: start; text-align: left; }
   .section, .shop-page, .checkout-page { padding-left: 16px; padding-right: 16px; }
 }
+.mn-nav-signin { white-space: nowrap; }
+@media (max-width: 560px) {
+  .site-header .brand__word { font-size: 18px; }
+  .site-header .brand__mark { width: 30px; height: 30px; }
+  .site-header__inner { padding: 10px 14px; }
+  .section__title, .shop__title { font-size: 30px; }
+  .product-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pcard__body { padding: 10px 10px 12px; }
+  .pcard__name { font-size: 14px; }
+  .pcard__price b { font-size: 15px; }
+  .pcard__specs span:nth-child(n+3) { display: none; }
+  .banner { min-height: auto; padding: 50px 16px 80px; }
+}
