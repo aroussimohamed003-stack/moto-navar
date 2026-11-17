@@ -41,9 +41,11 @@ export async function updateProfileFields({ fullName, phone, photoURL }) {
 /* ---------------- Orders ---------------- */
 
 export async function listMyOrders() {
-  const q = query(collection(db, "orders"), where("userId", "==", uid()), orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  // Filter on the server (required by Security Rules), sort in the browser
+  // so no composite index is needed.
+  const snap = await getDocs(query(collection(db, "orders"), where("userId", "==", uid())));
+  const ms = (t) => (t?.toMillis ? t.toMillis() : 0);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => ms(b.createdAt) - ms(a.createdAt));
 }
 
 /**
