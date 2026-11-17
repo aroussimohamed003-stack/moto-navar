@@ -4,7 +4,9 @@ import { getProduct, listProducts, formatPrice, SPEC_FIELDS, specValue } from ".
 import { addToWishlist } from "./customer-data.js";
 import { addToCart } from "./cart.js";
 import { productCard, bindCardActions, esc } from "./product-card.js";
-import { getSettings } from "./store-settings.js";
+import { getSettings, isCurrentUserAdmin } from "./store-settings.js";
+import { deleteProduct } from "./products.js";
+import { auth as _auth, onAuthStateChanged } from "./firebase.js";
 import { toast, authErrorMessage } from "./ui.js";
 
 const $ = (s) => document.querySelector(s);
@@ -75,6 +77,22 @@ try {
     $("#pdp").innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty__mark"></div><h3>Product not found</h3><p>It may have been removed.</p><a class="btn btn--ghost" href="shop.html">Back to shop</a></div>`;
   } else {
     await render(p);
+    onAuthStateChanged(_auth, async (u) => {
+      if (!u || !(await isCurrentUserAdmin(u)) || document.getElementById("admin-bar")) return;
+      const bar = document.createElement("div");
+      bar.id = "admin-bar";
+      bar.className = "admin-bar";
+      bar.innerHTML = `<span>Admin</span><a class="btn btn--sm" href="admin.html?edit=${encodeURIComponent(p.id)}#products">✏️ Edit product</a><button class="btn btn--sm btn--danger" type="button" id="admin-del">🗑 Delete product</button>`;
+      document.body.appendChild(bar);
+      bar.querySelector("#admin-del").addEventListener("click", async () => {
+        if (!confirm(`Delete "${p.name}" permanently? This cannot be undone.`)) return;
+        try {
+          await deleteProduct(p.id);
+          toast("Product deleted.", "success");
+          setTimeout(() => (location.href = "admin.html#products"), 800);
+        } catch (err) { toast(authErrorMessage(err), "error"); }
+      });
+    });
     related = (await listProducts()).filter((x) => x.category === p.category && x.id !== p.id).slice(0, 4);
     if (related.length) {
       $("#related").innerHTML = related.map(productCard).join("");

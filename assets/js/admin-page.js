@@ -213,7 +213,7 @@ confirmBtn.addEventListener("click", async () => {
 
 /* ---------------- Tabs ---------------- */
 
-const TABS = ["orders", "products", "settings", "accounts"];
+const TABS = ["products", "orders", "settings", "accounts"];
 function initAdminTabs() {
   const links = document.querySelectorAll("[data-admin-tab]");
   const show = (name) => {
@@ -226,7 +226,7 @@ function initAdminTabs() {
     show(l.dataset.adminTab);
   }));
   const h = location.hash.slice(1);
-  show(TABS.includes(h) ? h : "orders");
+  show(TABS.includes(h) ? h : "products");
 }
 
 /* ---------------- Boot ---------------- */

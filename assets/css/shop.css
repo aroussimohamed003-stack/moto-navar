@@ -243,3 +243,30 @@
   .inv-title { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .inv-table th, .invoice { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ---------- Admin product cards ---------- */
+.view-toggle { display: flex; border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; }
+.view-toggle button { width: 44px; height: 46px; background: var(--surface); border: 0; color: var(--muted); font-size: 18px; cursor: pointer; }
+.view-toggle button.is-active { background: var(--accent); color: #fff; }
+.bulk-bar { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line); flex-wrap: wrap; background: var(--surface); }
+.bulk-bar #bulk-count { color: var(--accent-2); font-weight: 600; font-size: 14px; margin-right: auto; }
+.bulk-bar .btn:disabled { opacity: .4; }
+.admin-pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; padding: 16px; }
+.apcard { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+.apcard.is-selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(255,77,28,.35); }
+.apcard.is-hidden .apcard__img { opacity: .45; }
+.apcard__select { position: absolute; top: 10px; left: 10px; z-index: 2; background: rgba(10,10,12,.75); border-radius: 8px; padding: 6px; display: flex; }
+.apcard__select input { width: 18px; height: 18px; accent-color: var(--accent); }
+.apcard__img { aspect-ratio: 4/3; background: #fff; }
+.apcard__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.apcard__body { padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.apcard__name { font-size: 15px; }
+.apcard__price b { color: var(--accent-2); font-size: 17px; }
+.apcard__pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.apcard__actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 0 14px 14px; }
+.apcard__actions .btn { width: 100%; height: 36px; padding: 0 8px; font-size: 13px; }
+.apcard__actions .apcard__del { grid-column: 1 / -1; height: 40px; font-size: 14px; }
+.accounts tr.is-selected td { background: rgba(255,77,28,.06); }
+.pdel-preview { display: flex; gap: 8px; align-items: center; margin: 4px 0 12px; }
+.admin-bar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #1f1f26; border: 1px solid var(--line-2); border-radius: 14px; box-shadow: var(--shadow); }
+.admin-bar > span { font-size: 12px; font-weight: 700; color: var(--accent-2); text-transform: uppercase; letter-spacing: .1em; }

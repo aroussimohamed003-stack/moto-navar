@@ -7,7 +7,7 @@
  *                URLs), specs{...}, active, featured, createdAt, updatedAt
  */
 import {
-  db, collection, doc, getDoc, getDocs, setDoc, deleteDoc, query, where, serverTimestamp,
+  db, collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, query, where, serverTimestamp,
 } from "./firebase.js";
 
 export const CATEGORIES = [
@@ -87,6 +87,10 @@ export async function saveProduct(data, id = null) {
   if (!id) clean.createdAt = serverTimestamp();
   await setDoc(ref, clean, { merge: !!id });
   return ref.id;
+}
+
+export async function setProductActive(id, active) {
+  await updateDoc(doc(db, "products", id), { active: !!active, updatedAt: serverTimestamp() });
 }
 
 export async function deleteProduct(id) {

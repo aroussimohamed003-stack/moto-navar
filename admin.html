@@ -38,8 +38,8 @@
 
 <main id="admin-app" class="admin" hidden>
   <nav class="admin-tabs" aria-label="Admin sections">
-    <a href="#orders" data-admin-tab="orders">Orders <span class="count" id="badge-pending"></span></a>
     <a href="#products" data-admin-tab="products">Products</a>
+    <a href="#orders" data-admin-tab="orders">Orders <span class="count" id="badge-pending"></span></a>
     <a href="#settings" data-admin-tab="settings">Banner &amp; settings</a>
     <a href="#accounts" data-admin-tab="accounts">Accounts</a>
   </nav>
@@ -96,12 +96,24 @@
         <select id="p-filter-status" class="select"><option value="">Any status</option><option value="visible">Visible</option><option value="hidden">Hidden</option><option value="featured">Featured</option></select>
         <select id="p-filter-stock" class="select"><option value="">Any stock</option><option value="in">In stock</option><option value="low">Low (≤2)</option><option value="out">Out of stock</option></select>
         <select id="p-sort" class="select"><option value="newest">Newest</option><option value="name">Name</option><option value="price-asc">Price ↑</option><option value="price-desc">Price ↓</option><option value="stock">Stock ↑</option></select>
+        <div class="view-toggle" role="group" aria-label="View">
+          <button type="button" data-view="grid" class="is-active" title="Cards">▦</button>
+          <button type="button" data-view="table" title="Table">☰</button>
+        </div>
         <span class="muted small" id="p-count"></span>
       </div>
-      <div class="table-scroll">
+      <div class="bulk-bar" id="bulk-bar" hidden>
+        <label class="check"><input type="checkbox" id="p-select-all"> Select all</label>
+        <span id="bulk-count"></span>
+        <button class="btn btn--sm btn--ghost" type="button" id="bulk-hide">Hide</button>
+        <button class="btn btn--sm btn--ghost" type="button" id="bulk-show">Show</button>
+        <button class="btn btn--sm btn--danger" type="button" id="bulk-delete">🗑 Delete selected</button>
+      </div>
+      <div class="admin-pgrid" id="p-grid"><p class="muted center" style="grid-column:1/-1;padding:40px">Loading products…</p></div>
+      <div class="table-scroll" id="p-table" hidden>
         <table class="accounts">
-          <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead>
-          <tbody id="p-tbody"><tr><td colspan="6" class="muted center">Loading products…</td></tr></tbody>
+          <thead><tr><th></th><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+          <tbody id="p-tbody"></tbody>
         </table>
       </div>
     </div>
@@ -250,7 +262,9 @@
 
 <dialog id="product-delete-dialog">
   <h2>Delete product?</h2>
-  <p class="muted"><b id="pdel-name"></b> will be removed from the shop. This cannot be undone.</p>
+  <div id="pdel-preview" class="pdel-preview"></div>
+  <p class="muted"><b id="pdel-name"></b> will be permanently removed from the shop. This cannot be undone.</p>
+  <p class="muted small">Tip: to remove it only temporarily, use <b>Hide</b> instead.</p>
   <div class="dialog__actions">
     <button class="btn btn--ghost" type="button" id="pdel-cancel">Cancel</button>
     <button class="btn btn--danger" type="button" id="pdel-confirm"><span>Delete</span><span class="spinner" aria-hidden="true"></span></button>

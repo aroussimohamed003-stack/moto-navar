@@ -1,7 +1,7 @@
 /** MOTO NAVAR – Admin: products (admin.html#products). */
 import {
   CATEGORIES, VEHICLE_CATEGORIES, SPEC_FIELDS, CONDITIONS,
-  listProducts, saveProduct, deleteProduct, resizeImage, formatPrice,
+  listProducts, saveProduct, deleteProduct, setProductActive, resizeImage, formatPrice,
 } from "./products.js";
 import { toast, setLoading, authErrorMessage, showFieldError, clearFieldErrors } from "./ui.js";
 
@@ -10,6 +10,9 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const BRANDS = ["Yamaha", "Honda", "Suzuki", "Kawasaki", "KTM", "BMW", "Ducati", "Triumph", "Harley-Davidson", "Piaggio", "Vespa", "SYM", "Kymco", "Peugeot", "Benelli", "CFMoto", "Royal Enfield", "Forza", "Dayang", "Zontes"];
 
 let products = [];
+let view = "grid";
+const selected = new Set();
+let lastRows = [];
 let editingId = null;
 let images = [];
 const MAX_IMAGES = 4;
@@ -38,6 +41,26 @@ export function initProducts() {
   $("#pf-file").addEventListener("change", onFiles);
   $("#pf-images").addEventListener("click", onImageClick);
   $("#p-tbody").addEventListener("click", onRowClick);
+  $("#p-grid").addEventListener("click", onRowClick);
+  for (const el of [$("#p-grid"), $("#p-tbody")]) el.addEventListener("change", onSelect);
+  document.querySelectorAll("[data-view]").forEach((b) => b.addEventListener("click", () => {
+    view = b.dataset.view;
+    document.querySelectorAll("[data-view]").forEach((x) => x.classList.toggle("is-active", x === b));
+    render();
+  }));
+  $("#p-select-all").addEventListener("change", (e) => {
+    lastRows.forEach((p) => (e.target.checked ? selected.add(p.id) : selected.delete(p.id)));
+    render();
+  });
+  $("#bulk-delete").addEventListener("click", () => {
+    if (!selected.size) return;
+    deletingIds = [...selected];
+    $("#pdel-name").textContent = `${deletingIds.length} product${deletingIds.length === 1 ? "" : "s"}`;
+    $("#pdel-preview").innerHTML = previewThumbs(deletingIds);
+    $("#product-delete-dialog").showModal();
+  });
+  $("#bulk-hide").addEventListener("click", () => bulkActive(false));
+  $("#bulk-show").addEventListener("click", () => bulkActive(true));
   $("#pdel-cancel").addEventListener("click", () => $("#product-delete-dialog").close());
   $("#pdel-confirm").addEventListener("click", onDelete);
   load();
@@ -50,9 +73,16 @@ async function load() {
     $("#ps-visible").textContent = products.filter((p) => p.active).length;
     $("#ps-low").textContent = products.filter((p) => p.stock > 0 && p.stock <= 2).length;
     $("#ps-out").textContent = products.filter((p) => p.stock <= 0).length;
+    for (const id of [...selected]) if (!products.some((p) => p.id === id)) selected.delete(id);
     render();
+    const editId = new URLSearchParams(location.search).get("edit");
+    if (editId && products.some((p) => p.id === editId)) {
+      history.replaceState(null, "", location.pathname + "#products");
+      openEditor(products.find((p) => p.id === editId));
+    }
   } catch (err) {
-    $("#p-tbody").innerHTML = `<tr><td colspan="6" class="muted center">Could not load products: ${esc(authErrorMessage(err))}</td></tr>`;
+    $("#p-grid").innerHTML = `<p class="muted center" style="grid-column:1/-1">Could not load products: ${esc(authErrorMessage(err))}</p>`;
+    $("#p-tbody").innerHTML = `<tr><td colspan="7" class="muted center">Could not load products: ${esc(authErrorMessage(err))}</td></tr>`;
   }
 }
 
@@ -73,31 +103,88 @@ function render() {
     (!stock || (stock === "in" ? p.stock > 0 : stock === "low" ? p.stock > 0 && p.stock <= 2 : p.stock <= 0))
   ).sort(sorters[$("#p-sort").value]);
   $("#p-count").textContent = `${rows.length} of ${products.length}`;
+  lastRows = rows;
+  $("#p-grid").hidden = view !== "grid";
+  $("#p-table").hidden = view !== "table";
+  $("#bulk-bar").hidden = !products.length;
+  $("#bulk-count").textContent = selected.size ? `${selected.size} selected` : "";
+  $("#p-select-all").checked = rows.length > 0 && rows.every((p) => selected.has(p.id));
+  ["#bulk-delete", "#bulk-hide", "#bulk-show"].forEach((b) => ($(b).disabled = !selected.size));
+
   if (!rows.length) {
-    $("#p-tbody").innerHTML = `<tr><td colspan="6" class="muted center">${products.length ? "No products match these filters." : "No products yet. Click <b>+ Add product</b> to create your first one."}</td></tr>`;
+    const msg = products.length ? "No products match these filters." : "No products yet. Click <b>+ Add product</b> to create your first one.";
+    $("#p-grid").innerHTML = `<p class="muted center" style="grid-column:1/-1;padding:40px">${msg}</p>`;
+    $("#p-tbody").innerHTML = `<tr><td colspan="7" class="muted center">${msg}</td></tr>`;
     return;
   }
-  $("#p-tbody").innerHTML = rows.map((p) => {
-    const sp = p.specs || {};
-    const meta = [p.brand, p.model, sp.engineCc && `${sp.engineCc} cc`, sp.year, p.condition !== "New" && p.condition].filter(Boolean).join(" · ");
-    return `
-    <tr>
+  const meta = (p) => { const sp = p.specs || {}; return [p.brand, p.model, sp.engineCc && `${sp.engineCc} cc`, sp.year, p.condition !== "New" && p.condition].filter(Boolean).join(" · "); };
+  const stockPill = (p) => (p.stock <= 0 ? `<span class="pill pill--danger">Out of stock</span>` : p.stock <= 2 ? `<span class="pill pill--warn">Stock ${p.stock}</span>` : `<span class="pill pill--ok">Stock ${p.stock}</span>`);
+  const statusPill = (p) => (p.active ? `<span class="pill pill--ok">Visible</span>` : `<span class="pill pill--warn">Hidden</span>`) + (p.featured ? ` <span class="pill pill--info">Featured</span>` : "");
+  const toggleBtn = (p) => `<button class="btn btn--sm btn--ghost" data-toggle="${esc(p.id)}">${p.active ? "🙈 Hide" : "👁 Show"}</button>`;
+
+  if (view === "grid") {
+    $("#p-grid").innerHTML = rows.map((p) => `
+      <article class="apcard ${selected.has(p.id) ? "is-selected" : ""} ${p.active ? "" : "is-hidden"}">
+        <label class="apcard__select" title="Select"><input type="checkbox" data-select="${esc(p.id)}" ${selected.has(p.id) ? "checked" : ""}></label>
+        <div class="apcard__img">${p.images?.[0] ? `<img src="${esc(p.images[0])}" alt="">` : `<span class="pcard__noimg"></span>`}</div>
+        <div class="apcard__body">
+          <span class="pcard__cat">${esc(p.category || "")}</span>
+          <strong class="apcard__name">${esc(p.name)}</strong>
+          ${meta(p) ? `<span class="muted small">${esc(meta(p))}</span>` : ""}
+          <div class="apcard__price"><b>${formatPrice(p.price)}</b>${p.oldPrice > p.price ? ` <s class="muted small">${formatPrice(p.oldPrice)}</s>` : ""}</div>
+          <div class="apcard__pills">${stockPill(p)} ${statusPill(p)}</div>
+        </div>
+        <div class="apcard__actions">
+          <button class="btn btn--sm" data-edit="${esc(p.id)}">✏️ Edit</button>
+          ${toggleBtn(p)}
+          <a class="btn btn--sm btn--ghost" href="product.html?id=${encodeURIComponent(p.id)}" target="_blank">View</a>
+          <button class="btn btn--sm btn--ghost" data-dup="${esc(p.id)}">Copy</button>
+          <button class="btn btn--sm btn--danger apcard__del" data-del="${esc(p.id)}">🗑 Delete</button>
+        </div>
+      </article>`).join("");
+    return;
+  }
+
+  $("#p-tbody").innerHTML = rows.map((p) => `
+    <tr class="${selected.has(p.id) ? "is-selected" : ""}">
+      <td><input type="checkbox" data-select="${esc(p.id)}" ${selected.has(p.id) ? "checked" : ""} aria-label="Select"></td>
       <td><div class="u-cell">
         <div class="p-thumb">${p.images?.[0] ? `<img src="${esc(p.images[0])}" alt="">` : ""}</div>
-        <div><strong>${esc(p.name)}</strong>${meta ? `<span class="muted small">${esc(meta)}</span>` : ""}${p.sku ? `<span class="muted small">Ref ${esc(p.sku)}</span>` : ""}</div>
+        <div><strong>${esc(p.name)}</strong>${meta(p) ? `<span class="muted small">${esc(meta(p))}</span>` : ""}${p.sku ? `<span class="muted small">Ref ${esc(p.sku)}</span>` : ""}</div>
       </div></td>
       <td>${esc(p.category || "—")}</td>
       <td class="nowrap"><b>${formatPrice(p.price)}</b>${p.oldPrice > p.price ? `<br><s class="muted small">${formatPrice(p.oldPrice)}</s>` : ""}</td>
-      <td>${p.stock <= 0 ? `<span class="pill pill--danger">0</span>` : p.stock <= 2 ? `<span class="pill pill--warn">${p.stock}</span>` : p.stock}</td>
-      <td>${p.active ? `<span class="pill pill--ok">Visible</span>` : `<span class="pill pill--warn">Hidden</span>`}${p.featured ? ` <span class="pill pill--info">Featured</span>` : ""}</td>
+      <td>${stockPill(p)}</td>
+      <td>${statusPill(p)}</td>
       <td class="actions">
-        <a class="icon-btn" href="product.html?id=${encodeURIComponent(p.id)}" target="_blank" title="View in shop" aria-label="View in shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></a>
         <button class="btn btn--sm btn--ghost" data-edit="${esc(p.id)}">Edit</button>
-        <button class="btn btn--sm btn--ghost" data-dup="${esc(p.id)}" title="Duplicate">Copy</button>
-        <button class="btn btn--sm btn--danger" data-del="${esc(p.id)}">Delete</button>
+        ${toggleBtn(p)}
+        <button class="btn btn--sm btn--danger" data-del="${esc(p.id)}">🗑 Delete</button>
       </td>
-    </tr>`;
-  }).join("");
+    </tr>`).join("");
+}
+
+function onSelect(e) {
+  const id = e.target.dataset?.select;
+  if (!id) return;
+  e.target.checked ? selected.add(id) : selected.delete(id);
+  render();
+}
+
+function previewThumbs(ids) {
+  return ids.slice(0, 6).map((id) => {
+    const p = products.find((x) => x.id === id);
+    return `<div class="p-thumb" title="${esc(p?.name)}">${p?.images?.[0] ? `<img src="${esc(p.images[0])}" alt="">` : ""}</div>`;
+  }).join("") + (ids.length > 6 ? `<span class="muted">+${ids.length - 6}</span>` : "");
+}
+
+async function bulkActive(active) {
+  try {
+    await Promise.all([...selected].map((id) => setProductActive(id, active)));
+    toast(`${selected.size} product${selected.size === 1 ? "" : "s"} ${active ? "shown in" : "hidden from"} the shop.`, "success");
+    selected.clear();
+    load();
+  } catch (err) { toast(authErrorMessage(err), "error"); }
 }
 
 /* ---------------- Editor ---------------- */
@@ -203,18 +290,28 @@ async function onSave(e) {
 
 /* ---------------- Row actions ---------------- */
 
-let deletingId = null;
+let deletingIds = [];
 
-function onRowClick(e) {
+async function onRowClick(e) {
   const find = (id) => products.find((p) => p.id === id);
   const editId = e.target.closest("[data-edit]")?.dataset.edit;
   if (editId) openEditor(find(editId));
   const dupId = e.target.closest("[data-dup]")?.dataset.dup;
   if (dupId) openEditor(find(dupId), { duplicate: true });
+  const togId = e.target.closest("[data-toggle]")?.dataset.toggle;
+  if (togId) {
+    const p = find(togId);
+    try {
+      await setProductActive(togId, !p.active);
+      toast(p.active ? "Product hidden from the shop." : "Product is visible in the shop.", "success", 2500);
+      load();
+    } catch (err) { toast(authErrorMessage(err), "error"); }
+  }
   const delId = e.target.closest("[data-del]")?.dataset.del;
   if (delId) {
-    deletingId = delId;
+    deletingIds = [delId];
     $("#pdel-name").textContent = find(delId)?.name || "This product";
+    $("#pdel-preview").innerHTML = previewThumbs(deletingIds);
     $("#product-delete-dialog").showModal();
   }
 }
@@ -223,12 +320,13 @@ async function onDelete(e) {
   const btn = e.currentTarget;
   setLoading(btn, true);
   try {
-    await deleteProduct(deletingId);
+    await Promise.all(deletingIds.map((id) => deleteProduct(id)));
+    deletingIds.forEach((id) => selected.delete(id));
     $("#product-delete-dialog").close();
-    toast("Product deleted.", "success");
+    toast(deletingIds.length > 1 ? `${deletingIds.length} products deleted.` : "Product deleted.", "success");
     load();
   } catch (err) {
-    toast(authErrorMessage(err), "error");
+    toast(err.code === "permission-denied" ? "Permission denied: this account is not an administrator." : authErrorMessage(err), "error");
   } finally {
     setLoading(btn, false);
   }
